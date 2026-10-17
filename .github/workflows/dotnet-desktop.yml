@@ -1,0 +1,38 @@
+name: .NET WPF Desktop Build
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    # Aplikasi WPF WAJIB menggunakan OS Windows untuk proses kompilasi
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build Application (Release)
+        run: dotnet build --configuration Release --no-restore
+
+      - name: Publish Application
+        # Mem-publish aplikasi ke dalam folder './publish'
+        run: dotnet publish --configuration Release --no-build --output ./publish
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: PhotoEditorApp-Release
+          # Menyimpan hasil kompilasi agar bisa diunduh dari tab 'Actions' di GitHub
+          path: ./publish/
