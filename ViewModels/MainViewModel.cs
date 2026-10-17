@@ -16,8 +16,8 @@ namespace PhotoEditorApp.ViewModels;
 public class MainViewModel : INotifyPropertyChanged
 {
     private WriteableBitmap? _displayImage;
-    private byte[]? _basePixels; // Piksel referensi dasar (sebelum slider)
-    private byte[]? _currentPixels; // Piksel hasil akhir
+    private byte[]? _basePixels;
+    private byte[]? _currentPixels;
     private int _pixelWidth;
     private int _pixelHeight;
     private int _stride;
@@ -29,7 +29,6 @@ public class MainViewModel : INotifyPropertyChanged
     private double _contrast = 0;
     private bool _isProcessing = false;
 
-    // Properti Binding UI
     public WriteableBitmap? DisplayImage
     {
         get => _displayImage;
@@ -54,7 +53,6 @@ public class MainViewModel : INotifyPropertyChanged
         set { _contrast = value; OnPropertyChanged(); _ = UpdateAdjustmentsAsync(); }
     }
 
-    // Commands
     public ICommand LoadCommand { get; }
     public ICommand SaveCommand { get; }
     public ICommand GrayscaleCommand { get; }
@@ -75,7 +73,6 @@ public class MainViewModel : INotifyPropertyChanged
         UndoCommand = new RelayCommand(_ => PerformUndo(), _ => _undoStack.Count > 0);
         RedoCommand = new RelayCommand(_ => PerformRedo(), _ => _redoStack.Count > 0);
         
-        // Dipanggil saat interaksi slider selesai (MouseUp)
         CommitAdjustmentsCommand = new RelayCommand(_ => CommitChanges()); 
     }
 
@@ -88,7 +85,6 @@ public class MainViewModel : INotifyPropertyChanged
             var decoder = BitmapDecoder.Create(stream, BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.OnLoad);
             var bitmap = decoder.Frames[0];
 
-            // Pastikan format warna standar (BGRA32) untuk pemrosesan pixel konsisten
             var formattedBitmap = new FormatConvertedBitmap(bitmap, PixelFormats.Bgra32, null, 0);
             
             _pixelWidth = formattedBitmap.PixelWidth;
@@ -124,27 +120,19 @@ public class MainViewModel : INotifyPropertyChanged
     {
         if (_basePixels == null || IsProcessing) return;
         IsProcessing = true;
-
         try
         {
-            // Update UI secara real-time dari _basePixels
             _currentPixels = await ImageProcessor.ApplyAdjustmentsAsync(_basePixels, Brightness, Contrast);
             UpdateDisplayImage(_currentPixels);
         }
-        finally
-        {
-            IsProcessing = false;
-        }
+        finally { IsProcessing = false; }
     }
 
     private void CommitChanges()
     {
         if (_basePixels == null || _currentPixels == null) return;
-        
-        // Simpan state lama ke Undo sebelum mengubah base
         _undoStack.Push((byte[])_basePixels.Clone());
         _redoStack.Clear();
-        
         _basePixels = (byte[])_currentPixels.Clone();
         ResetSliders();
     }
@@ -153,21 +141,16 @@ public class MainViewModel : INotifyPropertyChanged
     {
         if (_basePixels == null) return;
         IsProcessing = true;
-
         try
         {
             _undoStack.Push((byte[])_basePixels.Clone());
             _redoStack.Clear();
-
             _basePixels = await filterFunc(_basePixels);
             _currentPixels = (byte[])_basePixels.Clone();
             UpdateDisplayImage(_currentPixels);
             ResetSliders();
         }
-        finally
-        {
-            IsProcessing = false;
-        }
+        finally { IsProcessing = false; }
     }
 
     private void PerformUndo()
@@ -196,7 +179,6 @@ public class MainViewModel : INotifyPropertyChanged
 
     private void UpdateDisplayImage(byte[] pixels)
     {
-        // Harus dilakukan di UI Thread
         Application.Current.Dispatcher.Invoke(() =>
         {
             var bitmap = new WriteableBitmap(_pixelWidth, _pixelHeight, 96, 96, PixelFormats.Bgra32, null);
