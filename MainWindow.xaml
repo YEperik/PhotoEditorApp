@@ -23,11 +23,9 @@
                            HorizontalAlignment="Center" VerticalAlignment="Center" Panel.ZIndex="10"
                            Visibility="{Binding IsProcessing, Converter={x:Static BooleanToVisibilityConverter}}"/>
                 
-                <!-- ScrollViewer memungkinkan Pan otomatis ketika diperbesar -->
                 <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
                     <Image Source="{Binding DisplayImage}" Stretch="Uniform" Margin="20" RenderOptions.BitmapScalingMode="HighQuality">
                         <Image.LayoutTransform>
-                            <!-- Fitur Zoom dapat dihubungkan via Slider jika dibutuhkan, ini adalah stub-nya -->
                             <ScaleTransform ScaleX="1" ScaleY="1"/>
                         </Image.LayoutTransform>
                     </Image>
@@ -70,7 +68,6 @@
                 <TextBlock Text="Brightness" Foreground="White"/>
                 <Slider Minimum="-100" Maximum="100" Value="{Binding Brightness, UpdateSourceTrigger=PropertyChanged}" 
                         IsSnapToTickEnabled="True" TickFrequency="1" Margin="0,5,0,0">
-                    <!-- Event ini memastikan kita memicu aksi CommitChanges ke Undo Stack setelah slider dilepas -->
                     <Slider.InputBindings>
                         <MouseBinding Gesture="LeftClick" Command="{Binding CommitAdjustmentsCommand}"/>
                     </Slider.InputBindings>
@@ -84,7 +81,6 @@
                     </Slider.InputBindings>
                 </Slider>
                 
-                <!-- Tombol Konfirmasi Slider -->
                 <Button Command="{Binding CommitAdjustmentsCommand}" Content="Apply Adjustments" Height="30" Background="#007ACC" Foreground="White" BorderThickness="0" Margin="0,0,0,20"/>
 
                 <Separator Background="#3E3E42" Margin="0,0,0,20"/>
