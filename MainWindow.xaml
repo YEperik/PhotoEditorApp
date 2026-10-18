@@ -1,98 +1,59 @@
 <Window x:Class="PhotoEditorApp.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:local="clr-namespace:PhotoEditorApp.ViewModels"
-        Title="Modern Desktop Photo Editor" Height="720" Width="1080"
-        Background="#1E1E1E" Foreground="White" WindowStartupLocation="CenterScreen">
+        xmlns:vm="clr-namespace:PhotoEditorApp.ViewModels"
+        Title="WPF Veteran Photo Editor" Height="600" Width="900"
+        WindowStartupLocation="CenterScreen">
     
     <Window.DataContext>
-        <local:MainViewModel/>
+        <vm:MainViewModel />
     </Window.DataContext>
 
     <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*"/> <!-- Workspace Canvas -->
-            <ColumnDefinition Width="320"/> <!-- Control Panel -->
-        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/> <!-- Toolbar -->
+            <RowDefinition Height="*"/>    <!-- Canvas -->
+            <RowDefinition Height="Auto"/> <!-- StatusBar -->
+        </Grid.RowDefinitions>
 
-        <!-- AREA KANVAS GAMBAR -->
-        <Border Grid.Column="0" Background="#2D2D30" Margin="10" CornerRadius="8" ClipToBounds="True">
-            <Grid>
-                <!-- Indikator Loading -->
-                <TextBlock Text="Processing..." Foreground="LightSkyBlue" FontSize="18" 
-                           HorizontalAlignment="Center" VerticalAlignment="Center" Panel.ZIndex="10"
-                           Visibility="{Binding IsProcessing, Converter={x:Static BooleanToVisibilityConverter}}"/>
-                
-                <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
-                    <Image Source="{Binding DisplayImage}" Stretch="Uniform" Margin="20" RenderOptions.BitmapScalingMode="HighQuality">
-                        <Image.LayoutTransform>
-                            <ScaleTransform ScaleX="1" ScaleY="1"/>
-                        </Image.LayoutTransform>
-                    </Image>
-                </ScrollViewer>
-            </Grid>
-        </Border>
+        <!-- Toolbar -->
+        <ToolBarTray Grid.Row="0" Background="#F5F5F5">
+            <ToolBar Padding="5">
+                <Button Command="{Binding OpenCommand}" Content="📂 Open" Margin="0,0,5,0" Padding="10,5"/>
+                <Button Command="{Binding SaveCommand}" Content="💾 Save" Margin="0,0,5,0" Padding="10,5"/>
+                <Separator Margin="5,0"/>
+                <Button Command="{Binding UndoCommand}" Content="↩ Undo" Margin="0,0,5,0" Padding="10,5"/>
+                <Button Command="{Binding GrayscaleCommand}" Content="⚫ Grayscale" Margin="0,0,5,0" Padding="10,5"/>
+            </ToolBar>
+        </ToolBarTray>
 
-        <!-- PANEL KONTROL -->
-        <Border Grid.Column="1" Background="#252526" Padding="20">
-            <StackPanel>
-                <TextBlock Text="PHOTO STUDIO" FontSize="22" FontWeight="Bold" Foreground="White" Margin="0,0,0,20"/>
-                
-                <!-- File Ops -->
-                <Grid Margin="0,0,0,20">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="5"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    <Button Command="{Binding LoadCommand}" Content="Open Image" Height="35" Background="#007ACC" Foreground="White" BorderThickness="0"/>
-                    <Button Command="{Binding SaveCommand}" Grid.Column="2" Content="Save As..." Height="35" Background="#3E3E42" Foreground="White" BorderThickness="0"/>
-                </Grid>
+        <!-- Main Image Area with Scroll & Zoom capabilities setup -->
+        <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" Background="#2D2D30">
+            <Border Margin="20" Background="Transparent">
+                <!-- Gunakan RenderOptions.BitmapScalingMode untuk scaling kualitas tinggi -->
+                <Image Source="{Binding CurrentImage}" 
+                       Stretch="Uniform" 
+                       RenderOptions.BitmapScalingMode="HighQuality">
+                    <Image.Effect>
+                        <DropShadowEffect BlurRadius="15" Opacity="0.5" ShadowDepth="5"/>
+                    </Image.Effect>
+                </Image>
+            </Border>
+        </ScrollViewer>
 
-                <Separator Background="#3E3E42" Margin="0,0,0,20"/>
-
-                <!-- Edit History -->
-                <Grid Margin="0,0,0,20">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="5"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    <Button Command="{Binding UndoCommand}" Content="↶ Undo" Height="30" Background="#3E3E42" Foreground="White" BorderThickness="0"/>
-                    <Button Command="{Binding RedoCommand}" Grid.Column="2" Content="↷ Redo" Height="30" Background="#3E3E42" Foreground="White" BorderThickness="0"/>
-                </Grid>
-
-                <!-- Adjustments -->
-                <TextBlock Text="Adjustments" FontSize="14" FontWeight="SemiBold" Foreground="#AAAAAA" Margin="0,0,0,10"/>
-                
-                <TextBlock Text="Brightness" Foreground="White"/>
-                <Slider Minimum="-100" Maximum="100" Value="{Binding Brightness, UpdateSourceTrigger=PropertyChanged}" 
-                        IsSnapToTickEnabled="True" TickFrequency="1" Margin="0,5,0,0">
-                    <Slider.InputBindings>
-                        <MouseBinding Gesture="LeftClick" Command="{Binding CommitAdjustmentsCommand}"/>
-                    </Slider.InputBindings>
-                </Slider>
-                
-                <TextBlock Text="Contrast" Foreground="White" Margin="0,15,0,0"/>
-                <Slider Minimum="-100" Maximum="100" Value="{Binding Contrast, UpdateSourceTrigger=PropertyChanged}" 
-                        IsSnapToTickEnabled="True" TickFrequency="1" Margin="0,5,0,20">
-                    <Slider.InputBindings>
-                        <MouseBinding Gesture="LeftClick" Command="{Binding CommitAdjustmentsCommand}"/>
-                    </Slider.InputBindings>
-                </Slider>
-                
-                <Button Command="{Binding CommitAdjustmentsCommand}" Content="Apply Adjustments" Height="30" Background="#007ACC" Foreground="White" BorderThickness="0" Margin="0,0,0,20"/>
-
-                <Separator Background="#3E3E42" Margin="0,0,0,20"/>
-
-                <!-- Filters -->
-                <TextBlock Text="Quick Filters" FontSize="14" FontWeight="SemiBold" Foreground="#AAAAAA" Margin="0,0,0,10"/>
-                
-                <Button Command="{Binding GrayscaleCommand}" Content="Grayscale" Height="35" Background="#3E3E42" Foreground="White" BorderThickness="0" Margin="0,0,0,10"/>
-                <Button Command="{Binding InvertCommand}" Content="Invert Colors" Height="35" Background="#3E3E42" Foreground="White" BorderThickness="0" Margin="0,0,0,10"/>
-                <Button Command="{Binding BlurCommand}" Content="Gaussian Blur" Height="35" Background="#3E3E42" Foreground="White" BorderThickness="0"/>
-                
+        <!-- Loading Overlay -->
+        <Grid Grid.Row="1" Background="#80000000" Visibility="{Binding IsBusy, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                <TextBlock Text="Processing..." Foreground="White" FontSize="24" FontWeight="Bold"/>
+                <ProgressBar IsIndeterminate="True" Width="200" Height="10" Margin="0,10,0,0"/>
             </StackPanel>
-        </Border>
+        </Grid>
+
+        <!-- Status Bar -->
+        <StatusBar Grid.Row="2">
+            <StatusBarItem>
+                <TextBlock Text="Ready" />
+            </StatusBarItem>
+        </StatusBar>
     </Grid>
 </Window>
