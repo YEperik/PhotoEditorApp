@@ -2,58 +2,183 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="clr-namespace:PhotoEditorApp.ViewModels"
-        Title="WPF Veteran Photo Editor" Height="600" Width="900"
-        WindowStartupLocation="CenterScreen">
+        Title="WPF Veteran Photo Editor Pro" Height="720" Width="1080"
+        WindowStartupLocation="CenterScreen"
+        Background="#1E1E1E">
     
     <Window.DataContext>
         <vm:MainViewModel />
     </Window.DataContext>
 
+    <!-- Kumpulan Resource untuk Styling agar XAML tetap bersih -->
+    <Window.Resources>
+        <!-- Style untuk Button Modern -->
+        <Style TargetType="Button" x:Key="ModernButton">
+            <Setter Property="Background" Value="#2D2D30"/>
+            <Setter Property="Foreground" Value="#EEEEEE"/>
+            <Setter Property="Padding" Value="15,10"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Margin" Value="0,0,0,10"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" 
+                                CornerRadius="5" 
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#3F3F46"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Background" Value="#007ACC"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Background" Value="#1E1E1E"/>
+                                <Setter Property="Foreground" Value="#555555"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Style untuk Slider Modern -->
+        <Style TargetType="Slider" x:Key="ModernSlider">
+            <Setter Property="Margin" Value="0,5,0,15"/>
+            <Setter Property="IsSnapToTickEnabled" Value="True"/>
+            <Setter Property="TickFrequency" Value="1"/>
+        </Style>
+
+        <!-- Style untuk Label Panel -->
+        <Style TargetType="TextBlock" x:Key="PanelLabel">
+            <Setter Property="Foreground" Value="#CCCCCC"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Margin" Value="0,0,0,5"/>
+        </Style>
+    </Window.Resources>
+
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/> <!-- Toolbar -->
-            <RowDefinition Height="*"/>    <!-- Canvas -->
-            <RowDefinition Height="Auto"/> <!-- StatusBar -->
+            <RowDefinition Height="Auto"/> <!-- Top Menu -->
+            <RowDefinition Height="*"/>    <!-- Main Workspace -->
+            <RowDefinition Height="30"/>   <!-- StatusBar -->
         </Grid.RowDefinitions>
 
-        <!-- Toolbar -->
-        <ToolBarTray Grid.Row="0" Background="#F5F5F5">
-            <ToolBar Padding="5">
-                <Button Command="{Binding OpenCommand}" Content="📂 Open" Margin="0,0,5,0" Padding="10,5"/>
-                <Button Command="{Binding SaveCommand}" Content="💾 Save" Margin="0,0,5,0" Padding="10,5"/>
-                <Separator Margin="5,0"/>
-                <Button Command="{Binding UndoCommand}" Content="↩ Undo" Margin="0,0,5,0" Padding="10,5"/>
-                <Button Command="{Binding GrayscaleCommand}" Content="⚫ Grayscale" Margin="0,0,5,0" Padding="10,5"/>
-            </ToolBar>
-        </ToolBarTray>
-
-        <!-- Main Image Area with Scroll & Zoom capabilities setup -->
-        <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" Background="#2D2D30">
-            <Border Margin="20" Background="Transparent">
-                <!-- Gunakan RenderOptions.BitmapScalingMode untuk scaling kualitas tinggi -->
-                <Image Source="{Binding CurrentImage}" 
-                       Stretch="Uniform" 
-                       RenderOptions.BitmapScalingMode="HighQuality">
-                    <Image.Effect>
-                        <DropShadowEffect BlurRadius="15" Opacity="0.5" ShadowDepth="5"/>
-                    </Image.Effect>
-                </Image>
-            </Border>
-        </ScrollViewer>
-
-        <!-- Loading Overlay -->
-        <Grid Grid.Row="1" Background="#80000000" Visibility="{Binding IsBusy, Converter={StaticResource BooleanToVisibilityConverter}}">
-            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                <TextBlock Text="Processing..." Foreground="White" FontSize="24" FontWeight="Bold"/>
-                <ProgressBar IsIndeterminate="True" Width="200" Height="10" Margin="0,10,0,0"/>
+        <!-- Top Menu Bar -->
+        <Grid Grid.Row="0" Background="#252526" Height="50">
+            <Grid.Effect>
+                <DropShadowEffect BlurRadius="10" Opacity="0.3" ShadowDepth="2" Direction="270"/>
+            </Grid.Effect>
+            <StackPanel Orientation="Horizontal" Margin="15,0,0,0" VerticalAlignment="Center">
+                <Button Command="{Binding OpenCommand}" Content="📂 Buka Foto" Style="{StaticResource ModernButton}" Margin="0,0,10,0"/>
+                <Button Command="{Binding SaveCommand}" Content="💾 Simpan" Style="{StaticResource ModernButton}" Margin="0,0,10,0"/>
+                <Separator Margin="5,0,15,0" Width="1" Background="#333333"/>
+                <Button Command="{Binding UndoCommand}" Content="↩ Undo" Style="{StaticResource ModernButton}" Margin="0,0,10,0"/>
             </StackPanel>
         </Grid>
 
-        <!-- Status Bar -->
-        <StatusBar Grid.Row="2">
-            <StatusBarItem>
-                <TextBlock Text="Ready" />
-            </StatusBarItem>
-        </StatusBar>
+        <!-- Main Workspace (3-Pane Layout) -->
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="60"/>  <!-- Left Toolbar -->
+                <ColumnDefinition Width="*"/>   <!-- Image Canvas -->
+                <ColumnDefinition Width="280"/> <!-- Right Property Panel -->
+            </Grid.ColumnDefinitions>
+
+            <!-- Left Toolbar (Alat Cepat) -->
+            <Border Grid.Column="0" Background="#252526" BorderBrush="#333333" BorderThickness="0,0,1,0">
+                <StackPanel Margin="10,20,10,0">
+                    <Button ToolTip="Crop Tool" Style="{StaticResource ModernButton}" Content="✂" FontSize="18"/>
+                    <Button ToolTip="Brush Tool" Style="{StaticResource ModernButton}" Content="🖌" FontSize="18"/>
+                    <Button ToolTip="Text Tool" Style="{StaticResource ModernButton}" Content="T" FontSize="18"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Canvas Tengah -->
+            <Grid Grid.Column="1" Background="#111111">
+                <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+                    <Border Margin="30" HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <Border.Effect>
+                            <DropShadowEffect BlurRadius="25" Opacity="0.6" ShadowDepth="10" Direction="315" Color="Black"/>
+                        </Border.Effect>
+                        <!-- Grid Checkerboard untuk Background Transparan (PNG) -->
+                        <Grid>
+                            <Grid.Background>
+                                <DrawingBrush Viewport="0,0,20,20" ViewportUnits="Absolute" TileMode="Tile">
+                                    <DrawingBrush.Drawing>
+                                        <DrawingGroup>
+                                            <GeometryDrawing Brush="#333333">
+                                                <GeometryDrawing.Geometry>
+                                                    <RectangleGeometry Rect="0,0,20,20"/>
+                                                </GeometryDrawing.Geometry>
+                                            </GeometryDrawing>
+                                            <GeometryDrawing Brush="#444444">
+                                                <GeometryDrawing.Geometry>
+                                                    <GeometryGroup>
+                                                        <RectangleGeometry Rect="0,0,10,10"/>
+                                                        <RectangleGeometry Rect="10,10,10,10"/>
+                                                    </GeometryGroup>
+                                                </GeometryDrawing.Geometry>
+                                            </GeometryDrawing>
+                                        </DrawingGroup>
+                                    </DrawingBrush.Drawing>
+                                </DrawingBrush>
+                            </Grid.Background>
+                            
+                            <Image Source="{Binding CurrentImage}" 
+                                   Stretch="Uniform" 
+                                   RenderOptions.BitmapScalingMode="HighQuality"/>
+                        </Grid>
+                    </Border>
+                </ScrollViewer>
+            </Grid>
+
+            <!-- Right Property Panel -->
+            <Border Grid.Column="2" Background="#252526" BorderBrush="#333333" BorderThickness="1,0,0,0">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="20">
+                    <StackPanel>
+                        <TextBlock Text="PENYESUAIAN" Foreground="#FFFFFF" FontSize="14" FontWeight="Bold" Margin="0,0,0,20"/>
+
+                        <!-- Pengaturan Kecerahan -->
+                        <TextBlock Text="Kecerahan (Brightness)" Style="{StaticResource PanelLabel}"/>
+                        <Slider Style="{StaticResource ModernSlider}" Minimum="-100" Maximum="100" Value="0"/>
+
+                        <!-- Pengaturan Kontras -->
+                        <TextBlock Text="Kontras (Contrast)" Style="{StaticResource PanelLabel}"/>
+                        <Slider Style="{StaticResource ModernSlider}" Minimum="-100" Maximum="100" Value="0"/>
+
+                        <Separator Margin="0,15" Background="#333333"/>
+
+                        <TextBlock Text="EFEK CEPAT" Foreground="#FFFFFF" FontSize="14" FontWeight="Bold" Margin="0,0,0,15"/>
+                        <Button Command="{Binding GrayscaleCommand}" Content="⚫ Hitam Putih (Grayscale)" Style="{StaticResource ModernButton}" Margin="0,0,0,10"/>
+                        <Button Content="🟠 Sepia (Vintage)" Style="{StaticResource ModernButton}" Margin="0,0,0,10"/>
+                        <Button Content="🔵 Invert Colors" Style="{StaticResource ModernButton}"/>
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+
+            <!-- Loading Overlay -->
+            <Grid Grid.ColumnSpan="3" Background="#99000000" Visibility="{Binding IsBusy, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <TextBlock Text="Memproses..." Foreground="#FFFFFF" FontSize="20" FontWeight="Light" HorizontalAlignment="Center"/>
+                    <ProgressBar IsIndeterminate="True" Width="150" Height="4" Margin="0,15,0,0" Foreground="#007ACC" Background="#333333" BorderThickness="0"/>
+                </StackPanel>
+            </Grid>
+        </Grid>
+
+        <!-- Status Bar Bawah -->
+        <Border Grid.Row="2" Background="#007ACC">
+            <Grid>
+                <TextBlock Text="Siap." Foreground="#FFFFFF" Margin="10,0,0,0" VerticalAlignment="Center" FontSize="12"/>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,15,0" VerticalAlignment="Center">
+                    <TextBlock Text="100%" Foreground="#FFFFFF" Margin="0,0,5,0" FontSize="12"/>
+                    <TextBlock Text="🔍 Zoom" Foreground="#FFFFFF" FontSize="12"/>
+                </StackPanel>
+            </Grid>
+        </Border>
     </Grid>
 </Window>
