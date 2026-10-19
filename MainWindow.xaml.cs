@@ -1,11 +1,12 @@
 using System.Windows;
 
-namespace PhotoEditorApp;
-
-public partial class MainWindow : Window
+namespace PhotoEditorApp
 {
-    public MainWindow()
+    public partial class MainWindow : Window
     {
-        InitializeComponent();
+        public MainWindow()
+        {
+            InitializeComponent();
+        }
     }
 }
