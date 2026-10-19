@@ -10,9 +10,7 @@
         <vm:MainViewModel />
     </Window.DataContext>
 
-    <!-- Kumpulan Resource untuk Styling agar XAML tetap bersih -->
     <Window.Resources>
-        <!-- Style untuk Button Modern -->
         <Style TargetType="Button" x:Key="ModernButton">
             <Setter Property="Background" Value="#2D2D30"/>
             <Setter Property="Foreground" Value="#EEEEEE"/>
@@ -23,9 +21,7 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}" 
-                                CornerRadius="5" 
-                                Padding="{TemplateBinding Padding}">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="5" Padding="{TemplateBinding Padding}">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                         <ControlTemplate.Triggers>
@@ -45,14 +41,12 @@
             </Setter>
         </Style>
 
-        <!-- Style untuk Slider Modern -->
         <Style TargetType="Slider" x:Key="ModernSlider">
             <Setter Property="Margin" Value="0,5,0,15"/>
             <Setter Property="IsSnapToTickEnabled" Value="True"/>
             <Setter Property="TickFrequency" Value="1"/>
         </Style>
 
-        <!-- Style untuk Label Panel -->
         <Style TargetType="TextBlock" x:Key="PanelLabel">
             <Setter Property="Foreground" Value="#CCCCCC"/>
             <Setter Property="FontSize" Value="12"/>
@@ -63,12 +57,11 @@
 
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/> <!-- Top Menu -->
-            <RowDefinition Height="*"/>    <!-- Main Workspace -->
-            <RowDefinition Height="30"/>   <!-- StatusBar -->
+            <RowDefinition Height="Auto"/> 
+            <RowDefinition Height="*"/>    
+            <RowDefinition Height="30"/>   
         </Grid.RowDefinitions>
 
-        <!-- Top Menu Bar -->
         <Grid Grid.Row="0" Background="#252526" Height="50">
             <Grid.Effect>
                 <DropShadowEffect BlurRadius="10" Opacity="0.3" ShadowDepth="2" Direction="270"/>
@@ -81,15 +74,13 @@
             </StackPanel>
         </Grid>
 
-        <!-- Main Workspace (3-Pane Layout) -->
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="60"/>  <!-- Left Toolbar -->
-                <ColumnDefinition Width="*"/>   <!-- Image Canvas -->
-                <ColumnDefinition Width="280"/> <!-- Right Property Panel -->
+                <ColumnDefinition Width="60"/>  
+                <ColumnDefinition Width="*"/>   
+                <ColumnDefinition Width="280"/> 
             </Grid.ColumnDefinitions>
 
-            <!-- Left Toolbar (Alat Cepat) -->
             <Border Grid.Column="0" Background="#252526" BorderBrush="#333333" BorderThickness="0,0,1,0">
                 <StackPanel Margin="10,20,10,0">
                     <Button ToolTip="Crop Tool" Style="{StaticResource ModernButton}" Content="✂" FontSize="18"/>
@@ -98,14 +89,12 @@
                 </StackPanel>
             </Border>
 
-            <!-- Canvas Tengah -->
             <Grid Grid.Column="1" Background="#111111">
                 <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
                     <Border Margin="30" HorizontalAlignment="Center" VerticalAlignment="Center">
                         <Border.Effect>
                             <DropShadowEffect BlurRadius="25" Opacity="0.6" ShadowDepth="10" Direction="315" Color="Black"/>
                         </Border.Effect>
-                        <!-- Grid Checkerboard untuk Background Transparan (PNG) -->
                         <Grid>
                             <Grid.Background>
                                 <DrawingBrush Viewport="0,0,20,20" ViewportUnits="Absolute" TileMode="Tile">
@@ -128,40 +117,35 @@
                                     </DrawingBrush.Drawing>
                                 </DrawingBrush>
                             </Grid.Background>
-                            
-                            <Image Source="{Binding CurrentImage}" 
-                                   Stretch="Uniform" 
-                                   RenderOptions.BitmapScalingMode="HighQuality"/>
+                            <Image Source="{Binding CurrentImage}" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality"/>
                         </Grid>
                     </Border>
                 </ScrollViewer>
             </Grid>
 
-            <!-- Right Property Panel -->
             <Border Grid.Column="2" Background="#252526" BorderBrush="#333333" BorderThickness="1,0,0,0">
                 <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="20">
                     <StackPanel>
                         <TextBlock Text="PENYESUAIAN" Foreground="#FFFFFF" FontSize="14" FontWeight="Bold" Margin="0,0,0,20"/>
 
-                        <!-- Pengaturan Kecerahan -->
                         <TextBlock Text="Kecerahan (Brightness)" Style="{StaticResource PanelLabel}"/>
-                        <Slider Style="{StaticResource ModernSlider}" Minimum="-100" Maximum="100" Value="0"/>
+                        <Slider Style="{StaticResource ModernSlider}" Minimum="-100" Maximum="100" Value="{Binding Brightness, UpdateSourceTrigger=PropertyChanged}"/>
 
-                        <!-- Pengaturan Kontras -->
                         <TextBlock Text="Kontras (Contrast)" Style="{StaticResource PanelLabel}"/>
-                        <Slider Style="{StaticResource ModernSlider}" Minimum="-100" Maximum="100" Value="0"/>
+                        <Slider Style="{StaticResource ModernSlider}" Minimum="-100" Maximum="100" Value="{Binding Contrast, UpdateSourceTrigger=PropertyChanged}"/>
+
+                        <Button Command="{Binding ApplyCommand}" Content="✓ Terapkan" Background="#007ACC" Foreground="White" Padding="10" Margin="0,10,0,15"/>
 
                         <Separator Margin="0,15" Background="#333333"/>
 
                         <TextBlock Text="EFEK CEPAT" Foreground="#FFFFFF" FontSize="14" FontWeight="Bold" Margin="0,0,0,15"/>
-                        <Button Command="{Binding GrayscaleCommand}" Content="⚫ Hitam Putih (Grayscale)" Style="{StaticResource ModernButton}" Margin="0,0,0,10"/>
-                        <Button Content="🟠 Sepia (Vintage)" Style="{StaticResource ModernButton}" Margin="0,0,0,10"/>
-                        <Button Content="🔵 Invert Colors" Style="{StaticResource ModernButton}"/>
+                        <Button Command="{Binding GrayscaleCommand}" Content="⚫ Hitam Putih" Style="{StaticResource ModernButton}" Margin="0,0,0,10"/>
+                        <Button Command="{Binding SepiaCommand}" Content="🟠 Sepia (Vintage)" Style="{StaticResource ModernButton}" Margin="0,0,0,10"/>
+                        <Button Command="{Binding InvertCommand}" Content="🔵 Invert Colors" Style="{StaticResource ModernButton}"/>
                     </StackPanel>
                 </ScrollViewer>
             </Border>
 
-            <!-- Loading Overlay -->
             <Grid Grid.ColumnSpan="3" Background="#99000000" Visibility="{Binding IsBusy, Converter={StaticResource BooleanToVisibilityConverter}}">
                 <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                     <TextBlock Text="Memproses..." Foreground="#FFFFFF" FontSize="20" FontWeight="Light" HorizontalAlignment="Center"/>
@@ -170,14 +154,9 @@
             </Grid>
         </Grid>
 
-        <!-- Status Bar Bawah -->
         <Border Grid.Row="2" Background="#007ACC">
             <Grid>
                 <TextBlock Text="Siap." Foreground="#FFFFFF" Margin="10,0,0,0" VerticalAlignment="Center" FontSize="12"/>
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,15,0" VerticalAlignment="Center">
-                    <TextBlock Text="100%" Foreground="#FFFFFF" Margin="0,0,5,0" FontSize="12"/>
-                    <TextBlock Text="🔍 Zoom" Foreground="#FFFFFF" FontSize="12"/>
-                </StackPanel>
             </Grid>
         </Border>
     </Grid>
